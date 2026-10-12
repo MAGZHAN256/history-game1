@@ -1,0 +1,619 @@
+<game.html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ұлы Дала Мұрасы - Премиум Тарихи Ойын</title>
+    <style>
+        :root {
+            --primary: #1f4e79;
+            --success: #28a745;
+            --danger: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.6s ease;
+        }
+
+        /* Кезеңдердің өз обоилары (түстері) */
+        body.stage-1 { background: linear-gradient(135deg, #1e130c 0%, #3b2219 100%); }
+        body.stage-2 { background: linear-gradient(135deg, #091c14 0%, #133827 100%); }
+        body.stage-3 { background: linear-gradient(135deg, #2b080c 0%, #521217 100%); }
+        body.stage-4 { background: linear-gradient(135deg, #100c24 0%, #291d52 100%); }
+
+        header {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo { font-size: 1.4rem; font-weight: bold; letter-spacing: 1px; }
+
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            background: rgba(25, 25, 25, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            flex-grow: 1;
+            width: 90%;
+        }
+
+        h2, h3 { margin-bottom: 15px; }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); }
+        .btn-success { background: var(--success); }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0 20px 0;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .login-card {
+            max-width: 450px;
+            margin: 40px auto;
+            background: #1e1e1e;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .stage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stage-card {
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.15);
+            padding: 25px 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .stage-card:hover {
+            transform: scale(1.03);
+            background: rgba(255,255,255,0.12);
+            border-color: #fff;
+        }
+
+        .quiz-box { margin-top: 15px; }
+        .question-text { font-size: 1.25rem; font-weight: 600; margin-bottom: 25px; line-height: 1.5; }
+        
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 14px 18px;
+            text-align: left;
+            border-radius: 10px;
+            color: inherit;
+            cursor: pointer;
+            font-size: 1.05rem;
+            transition: 0.2s;
+        }
+
+        .option-btn:hover { background: rgba(255,255,255,0.2); }
+        .option-btn.correct { background: var(--success) !important; border-color: var(--success); }
+        .option-btn.wrong { background: var(--danger) !important; border-color: var(--danger); }
+
+        .reward-screen, .gameover-screen, .leaderboard-screen {
+            text-align: center;
+            padding: 20px;
+        }
+        .badge-icon { font-size: 4.5rem; margin: 15px 0; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+        }
+        th, td {
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 12px;
+            text-align: center;
+        }
+        th { background: rgba(0,0,0,0.6); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="stage-1">
+
+    <header>
+        <div class="logo">🏛️ Ұлы Дала Мұрасы</div>
+        <div class="status-bar" id="statusBar" style="display: none;">
+            <div id="livesDisplay">❤️ ❤️ ❤️</div>
+            <div id="scoreDisplay">Ұпай: 0</div>
+        </div>
+    </header>
+
+    <div class="container" id="appContainer">
+        <!-- КІРУ БЕТІ -->
+        <div id="loginScreen" class="login-card">
+            <h2>Ойынға Қош Келдіңіз!</h2>
+            <p style="margin: 15px 0; color: #aaa;">Атыңызды жазыңыз (Басында 3 өмір беріледі):</p>
+            <input type="text" id="playerName" placeholder="Атыңыз немесе топ атауы...">
+            <button class="btn" onclick="startStudentGame()">Ойынға Кіру</button>
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid #444;">
+            <button class="btn btn-danger" onclick="showAdminLogin()">👨‍🏫 Мұғалім (Админ) панелі</button>
+        </div>
+
+        <!-- АДМИН КІРУ -->
+        <div id="adminLoginScreen" class="login-card hidden">
+            <h2>Админ Құпия Сөзі</h2>
+            <input type="password" id="adminPass" placeholder="Құпия сөз (admin123)">
+            <button class="btn" onclick="verifyAdmin()">Кіру</button>
+            <button class="btn btn-danger" onclick="location.reload()">Артқа</button>
+        </div>
+
+        <!-- АДМИН ПАНЕЛІ -->
+        <div id="adminPanel" class="hidden">
+            <h2>📊 Оқушыларды Бақылау Панелі (Live)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Қатысушы</th>
+                        <th>Кезең</th>
+                        <th>Өмірі</th>
+                        <th>Ұпай</th>
+                        <th>Әрекет</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+            <br>
+            <button class="btn btn-danger" onclick="resetAllData()">Бәрін Тазарту</button>
+            <button class="btn" onclick="location.reload()">Шығу</button>
+        </div>
+
+        <!-- ОҚУШЫ МӘЗІРІ (HUB) -->
+        <div id="studentHub" class="hidden">
+            <h2 id="welcomeUser">Қош келдіңіз!</h2>
+            <p>Өтілетін кезеңді таңдаңыз (Әр кезеңде 15 сұрақтан):</p>
+            <div class="stage-grid">
+                <div class="stage-card" onclick="startStage(1)">
+                    <h3>1-Кезең</h3>
+                    <p>Империялар дәуірі<br>(15 сұрақ)</p>
+                </div>
+                <div class="stage-card" onclick="startStage(2)">
+                    <h3>2-Кезең</h3>
+                    <p>Қазақ хандығы<br>(15 сұрақ)</p>
+                </div>
+                <div class="stage-card" onclick="startStage(3)">
+                    <h3>3-Кезең</h3>
+                    <p>Азаттық күресі<br>(15 сұрақ)</p>
+                </div>
+                <div class="stage-card" onclick="startStage(4)">
+                    <h3>4-Кезең ⚡</h3>
+                    <p>Архив сараптамасы<br>(Өте қиын - 15 сұрақ)</p>
+                </div>
+            </div>
+            <br>
+            <button class="btn btn-success" style="width:100%; margin-top:15px;" onclick="showLeaderboard()">🏆 Жалпы Рейтинг пен Орынды Көру</button>
+        </div>
+
+        <!-- СҰРАҚТАР БЕТІ -->
+        <div id="quizScreen" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 id="quizStageTitle">Кезең</h3>
+                <span id="questionCounter">Сұрақ: 1 / 15</span>
+            </div>
+            <div class="quiz-box">
+                <div class="question-text" id="questionText">Сұрақ...</div>
+                <div class="options-list" id="optionsList"></div>
+            </div>
+            <br>
+            <button class="btn btn-danger" onclick="exitToHub()">Мәзірге шығу</button>
+        </div>
+
+        <!-- КЕЗЕҢ СЫЙЛЫҒЫ -->
+        <div id="rewardScreen" class="hidden reward-screen">
+            <h2>🎉 Кезең сәтті аяқталды!</h2>
+            <div class="badge-icon" id="rewardBadge">🛡️</div>
+            <h3 id="rewardTitle">Бейдж</h3>
+            <p id="rewardDesc">Сипаттама</p>
+            <br>
+            <button class="btn btn-success" onclick="returnToHub()">Мәзірге оралу</button>
+        </div>
+
+        <!-- ОЙЫН БІТТІ ( GAME OVER ) -->
+        <div id="gameOverScreen" class="hidden gameover-screen">
+            <h2 style="color: var(--danger); font-size: 2.5rem;">❌ Өміріңіз Таусылды!</h2>
+            <div style="font-size: 4rem; margin: 20px 0;">💀</div>
+            <p>Барлық 3 өміріңізді жоғалттыңыз. Қайтадан көріңіз!</p>
+            <br>
+            <button class="btn btn-danger" onclick="restartStage()">Қайта бастау</button>
+            <button class="btn" onclick="returnToHub()">Мәзірге қайту</button>
+        </div>
+
+        <!-- ЖЕКЕ РЕЙТИНГ ЖӘНЕ ОРЫН БЕТІ -->
+        <div id="leaderboardScreen" class="hidden leaderboard-screen">
+            <h2>🏆 Ойын Нәтижелері мен Сіздің Орныңыз</h2>
+            <div id="myRankBox" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px 0; font-size: 1.3rem;">
+            </div>
+            <h3>Үздік Қатысушылар Кестесі:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Орын</th>
+                        <th>Қатысушы</th>
+                        <th>Ұпай</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardTableBody"></tbody>
+            </table>
+            <br>
+            <button class="btn" onclick="returnToHub()">Мәзірге Оралу</button>
+        </div>
+    </div>
+
+    <script>
+        // Жауаптары A, B, C, D варианттарына әдейі араластырылып (shuffled) бөлінген 60 сұрақ базасы
+        const stagesData = {
+            1: [
+                { q: "Шыңғыс ханның өмірге келген жылы және шын есімі қалай?", options: ["1162 ж., Тэмучин", "1155 ж., Темуджин", "1190 ж., Жамұқа", "1206 ж., Есугей"], answer: 1 },
+                { q: "Шыңғыс хан туралы маңызды мәлімет беретін «Моңғолдың құпия шежіресінен» басқа тарихи еңбек қалай аталады?", options: ["Әбілғазы «Түрік шежіресі»", "Рашид ад-Дин «Джами ат-Тауарих»", "М.Х. Дулати «Тарих-и Рашиди»", "Жамиғ ат-тауарих"], answer: 1 },
+                { q: "1206 жылы Онон өзені бойындағы Ұлы құрылтайда Темуджинге қандай атақ берілді?", options: ["Хан-аттау", "Сардарбек", "Ұлы қаған (Шыңғыс хан)", "Беклербек"], answer: 2 },
+                { q: "Шыңғыс ханның Жетісуға Жебе ноян бастаған әскерді жіберуінің басты себебі неде еді?", options: ["Отырарды тонау", "Найман ханы Күшлікті талқандау және дін еркіндігін беру", "Қытайды жаулап алу", "Хорезмшахты жазалау"], answer: 1 },
+                { q: "1219 жылы Отырар қаласын қоршауға алған Шыңғыс ханның ұлдары кімдер еді?", options: ["Жошы мен Төле", "Шағатай мен Үгедей", "Батый мен Орда Ежен", "Берке пен Меңгу Темір"], answer: 1 },
+                { q: "1223 жылы моңғол әскерлері орыс пен қыпшақтардың біріккен қолын қай өзен бойында талқандады?", options: ["Еділ өзені", "Қалқа өзені", "Жайық өзені", "Онон өзені"], answer: 1 },
+                { q: "Шыңғыс хан империяны басқару үшін аумақты 4 ұлына бөлді. Жошыға тиесілі аймақ:", options: ["Шығыс Түркістан мен Мәуереннахр", "Жетісудың солтүстігінен Төменгі Еділге дейін", "Батыс Моңғолия мен Ертіс", "Моңғолия аумағы"], answer: 1 },
+                { q: "Алтын Орда (Жошы ұлысы) мемлекеті ресми түрде қай жылы құрылды?", options: ["1224 жылы", "1257 жылы", "1242 жылы", "1312 жылы"], answer: 2 },
+                { q: "Алтын Ордада ислам дінін ресми дін деп жариялаған хан кім?", options: ["Батый хан", "Өзбек хан", "Берке хан", "Тоқтамыс хан"], answer: 1 },
+                { q: "Алтын Ордада мемлекеттік қаржыны, салық пен сауданы басқарушы жоғары қызмет қалай аталды?", options: ["Беклербек", "Уәзір", "Басқақ", "Даруға"], answer: 1 },
+                { q: "1380 жылы Куликова шайқасында орыс әскерлерінен жеңілген Мамайға қарсы шығып, 1382 жылы Мәскеуді өртеп жіберген хан кім?", options: ["Әмір Темір", "Тоқтамыс хан", "Өзбек хан", "Ахмет хан"], answer: 1 },
+                { q: "Ақ Орда мемлекетінің негізін қалаған Шыңғыс ханның немересі (Жошының үлкен ұлы):", options: ["Батый хан", "Орда Ежен", "Шайбан хан", "Төле хан"], answer: 1 },
+                { q: "1348 жылы Шығыс Түркістан мен Жетісу аумағында құрылған жаңа мемлекет қалай аталады?", options: ["Ақ Орда", "Моғолстан", "Ноғай ордасы", "Әбілхайыр хандығы"], answer: 1 },
+                { q: "Моғолстан мемлекетінде дулат әміршісі Полатшының қолдауымен 17 жасында хан көтерілген тұлға:", options: ["Ілияс қожа", "Тоғылық Темір", "Есенбұға", "Жүніс хан"], answer: 1 },
+                { q: "1365 жылы Моғолстан ханы Илияс қожа пен Әмір Темір арасында Сырдария жағасында өткен әйгілі шайқас:", options: ["Құндызша шайқасы", "Батпақ шайқасы", "Терек шайқасы", "Аңырақай шайқасы"], answer: 1 }
+            ],
+            2: [
+                { q: "Қазақ хандығы ресми түрде қай жылы және қай өңірде құрылды?", options: ["1457 ж., Сығанақ маңында", "1465/1466 ж., Жетісудың батысында (Шу-Талас)", "1500 ж., Түркістанда", "1428 ж., Тура өңірінде"], answer: 1 },
+                { q: "Қазақ хандығының құрылуы туралы алғашқы дерек беретін «Тарих-и Рашиди» еңбегінің авторы:", options: ["Рашид ад-Дин", "Мырза Мұхаммед Хайдар Дулати", "Махмұд ибн Уәли", "Әбілғазы хан"], answer: 1 },
+                { q: "Қазақ хандығының алғашқы хандары кімдер?", options: ["Қасым мен Хақназар", "Керей мен Жәнібек", "Тәуекел мен Есім", "Бұрындық пен Әбілхайыр"], answer: 1 },
+                { q: "1510 жылы Ұлытау баурайында Мұхаммед Шайбанидің әскерін талқандаған қазақ ханы/сұлтаны:", options: ["Бұрындық хан", "Қасым сұлтан", "Жәнібек хан", "Хақназар хан"], answer: 1 },
+                { q: "«Қасым ханның қасқа жолы» атты заңдар жүйесінің авторы және мақсаты:", options: ["Тәуке хан, билер кеңесін құру", "Қасым хан, мемлекетті бір орталыққа бағындыру", "Есім хан, әскери заңдарды реттеу", "Шыңғыс хан, Ұлы Ясы"], answer: 1 },
+                { q: "Қасым ханның тұсында Қазақ хандығының батыстағы шекарасы қай өзенге дейін жетті?", options: ["Еділ өзеніне", "Жайық өзеніне (Сарайшық қаласы)", "Дунайға дейін", "Тобылға дейін"], answer: 1 },
+                { q: "Қазақ хандығының «қайта өрлеу» дәуірі кімнің билік еткен кезеңімен байланыстырылады?", options: ["Тәуекел хан", "Хақназар хан", "Есім хан", "Жәңгір хан"], answer: 1 },
+                { q: "1598 жылы Мәуереннахрға жорық жасап, Бұхара түбінде ауыр жараланып көз жұмған қазақ ханы:", options: ["Есім хан", "Тәуекел хан", "Хақназар хан", "Бұйдаш хан"], answer: 1 },
+                { q: "«Есім ханның ескі жолы» реформасының басты мақсаты неде еді?", options: ["Хан билігін шектеусіз жасау", "Қазақ даласын үш жүзге бөліп, билердің билігін күшейту", "Орыс патшалығымен одақтасу", "Шариғат заңдарын толық енгізу"], answer: 1 },
+                { q: "1613 жылы Ташкентте хан тағына отырып, қазақ елінде екі хандықтың пайда болуына себеп болған тұлға:", options: ["Жәңгір хан", "Тұрсын-Мұхамед хан", "Тәуке хан", "Абылай хан"], answer: 1 },
+                { q: "Жәңгір ханның «салқам» лақап атының мағынасы қандай?", options: ["Ақылды, парасатты", "Айбатты, алып денелі, қаһарлы", "Әділ би", "Жылдам әскербасы"], answer: 1 },
+                { q: "1643 жылы 600 сарбазбен 50 мыңдық жоңғар әскеріне қарсы тұрған әйгілі шайқас:", options: ["Бұланты шайқасы", "Орбұлақ шайқасы", "Аңырақай шайқасы", "Қалқа шайқасы"], answer: 1 },
+                { q: "Қазақ хандығындағы жаттыққан жауынгерлер мен батырлардың рөлін арттырып, «Жеті жарғыны» дүниеге әкелген хан:", options: ["Есім хан", "Әз Тәуке хан", "Қасым хан", "Тәуекел хан"], answer: 1 },
+                { q: "Орыс деректерінде Тәуке ханды қандай антикалық заңгерге теңеп, «Дала Ликургі» деп атады?", options: ["Солон", "Ликург (Спарта заңгері)", "Юстиниан", "Цезарь"], answer: 1 },
+                { q: "1680-1718 жылдары билік құрған Тәуке ханның заңы қалай аталды?", options: ["«Қасқа жол»", "«Жеті жарғы»", "«Ескі жол»", "«Ұлы Ясы»"], answer: 1 }
+            ],
+            3: [
+                { q: "1710 жылы қазақ жүздерінің басы қосылып, жоңғарларға қарсы соққы беруді ақылдасқан тарихи орын:", options: ["Ордабасы тауы", "Қарақұм аймағы", "Күлтөбе", "Ұлытау"], answer: 1 },
+                { q: "Қазақ халқы үшін ауыр тиген «Ақтабан шұбырынды, Алқакөл сұлама» зілзаласы қай жылы басталды?", options: ["1710 жылы", "1723 жылы", "1726 жылы", "1730 жылы"], answer: 1 },
+                { q: "«Ақтабан шұбырынды» жылдарында шыққан әйгілі халық әні қалай аталады?", options: ["«Желдірме»", "«Елім-ай»", "«Қаратау шері»", "«Еңсегей бойлы Ер Есім»"], answer: 1 },
+                { q: "1726 жылы Үш жүздің әскері бас қосқан, оңтүстіктегі Бадам өзені алқабындағы тарихи құрылтай өткен тау:", options: ["Аңырақай тауы", "Ордабасы тауы", "Ұлытау", "Хантау"], answer: 1 },
+                { q: "Ордабасы құрылтайында бүкіл қазақ әскерінің бас қолбасшысы (сардарбегі) болып сайланған батыр:", options: ["Қаракерей Қабанбай", "Қанжығалы Бөгенбай", "Шақшақ Жәнібек", "Райымбек батыр"], answer: 1 },
+                { q: "1728 жылы Сарысудың орта ағысы, Бұланты және Білеуті өзендері аралығында қазақтар жеңіске жеткен жер қалай аталды?", options: ["Аңырақай", "Қалмаққырылған", "Итішпес", "Батпақ"], answer: 1 },
+                { q: "Қазақ-жоңғар соғысындағы бетбұрыс жасаған ең ірі жеңіс — Аңырақай шайқасы қай жылы өтті?", options: ["1725 жылы", "1730 жылы көктемде", "1735 жылы", "1740 жылы"], answer: 1 },
+                { q: "Аңырақай шайқасы кезінде ерекше ерлік көрсетіп, 12 қалмақты аттан түсіріп, «Абылай!» деп ұрандаған сұлтан:", options: ["Бәрақ сұлтан", "Әбілмансұр (Абылай сұлтан)", "Әбілқайыр хан", "Жәңгір хан"], answer: 1 },
+                { q: "Аңырақай шайқасы Балқаштың оңтүстігіндегі қандай өңірде өтті?", options: ["Шу өзені бойы", "Итішпес алқабы", "Іле алқабы", "Талас жағасы"], answer: 1 },
+                { q: "Қаракерей Қабанбай батырға «Дарабоз» деген атақты берген кім?", options: ["Тәуке хан", "Абылай хан", "Әбілқайыр хан", "Бөгенбай батыр"], answer: 1 },
+                { q: "Шақшақ Жәнібек батыр 1725 жылы қай өзен маңында жоңғарларға күшті соққы берді?", options: ["Ертіс бойы", "Қорғалжын көлі маңы", "Жайық өзені", "Тобыл маңы"], answer: 1 },
+                { q: "Үш жүзге төбе би болып сайланған, әділдігімен танылған үш би кімдер?", options: ["Едіге би, Мұса би, Вақас би", "Төле би, Қазыбек би, Әйтеке би", "Бөгенбай, Қабанбай, Жәнібек", "Қасым хан, Есім хан, Тәуке хан"], answer: 1 },
+                { q: "Қазыбек бидің сөз сөйлеп, Қонтайшыдан «Біз қазақ деген мал баққан елміз...» деп қайтарған елшілігі қай жағдайға байланысты еді?", options: ["Орыс патшалығына қосылу", "Жоңғарлармен бітім жасау және тұтқындарды қайтару", "Сауда жолдарын ашу", "Бұхарамен соғысу"], answer: 1 },
+                { q: "Әйтеке би жас кезінде кімнен қолбасшылық пен ел басқаруды үйренді?", options: ["Тәуке ханнан", "Жалаңтөс батырдан", "Әбілқайыр ханнан", "Ақша бабадан"], answer: 1 },
+                { q: "Жоңғарлардың қазақ жеріне жасаған шапқыншылығын жырлаған халық ақыны және батырлардың бірі:", options: ["Мұрын жырау", "Ақтамберді, Бұқар, Үмбетей жыраулар", "Асанқайғы", "Қазтуған"], answer: 1 }
+            ],
+            4: [
+                { q: "Өтеміс қажының «Чингиз-наме» шығармасы бойынша Жошы қайтыс болғаннан кейін оның орнына мұрагер болып ресми таңдалған кім?", options: ["Орда Ежен", "Батый хан", "Шайбан хан", "Төле хан"], answer: 1 },
+                { q: "Муин-ад-Дин Натанзидің «Мунтахаб ат-таварих» еңбегінде Жошы ұлысының оң және сол қанаттары қандай атаумен берілген?", options: ["Оң қанат — Алтын Орда, Сол қанат — Көк Орда", "Оң қанат — Көк Орда, Сол қанат — Ақ Орда", "Оң қанат — Ақ Орда, Сол қанат — Боз Орда", "Оң қанат — Сарай, Сол қанат — Шығыс Дешті"], answer: 1 },
+                { q: "Шыңғыс ханның «Ұлы Ясы» заңындағы «Беклербек» лауазымының тікелей атқарған функциясы:", options: ["Тек салық жинау және қаржыны басқару", "Әскери істі басқару, жоғарғы сот құқығы және сыртқы қатынастарды бақылау", "Діни істер мен қазылықты жүргізу", "Ханның жеке күзетін ұйымдастыру"], answer: 1 },
+                { q: "1358 жылы Бердібек хан әкесі Жәнібекке қастандық жасап таққа келгеннен кейін Алтын Ордада басталып, 20 жылға созылған 25 хан ауысқан дәуір қалай аталады?", options: ["«Ақтабан шұбырынды»", "«Дүрбелең жылдар» (Великая замятня)", "«Бұлғақтау заманы»", "«Қараңғы ғасыр»"], answer: 1 },
+                { q: "1395 жылы 15 сәуірде Терек түбіндегі шайқаста Тоқтамыс пен Әмір Темір соқтығысқаннан кейін Ақ Ордада билікті иеленген Ұрыс ханның ұлы кім?", options: ["Темірмәлік", "Қойыршақ", "Тоқтақия", "Барақ хан"], answer: 1 },
+                { q: "Махмұд ибн Уәлидің мәліметі бойынша, 1428 жылы 17 жасында Тура өңірінде «көшпелі өзбектер» мемлекетінің негізін салған Әбілхайыр ханды қанша тайпа өкілдері қолдады?", options: ["екі жүздей тайпа", "тоқсан екі тайпа", "жүз ру", "елу тайпа"], answer: 1 },
+                { q: "Мырза Мұхаммед Хайдар Дулатидің «Тарих-и Рашиди» еңбегінде Қазақ хандығының құрылуы («сұлтандардың билік жүргізуінің басы») хижра бойынша қай жылмен белгіленген?", options: ["850 жыл", "870 жыл (1465/1466 ж.)", "900 жыл", "830 жыл"], answer: 1 },
+                { q: "Я. Гавердовскийдің «Қырғыз-қайсақ даласына шолу» еңбегінде 1710 жылғы Қарақұм құрылтайында жоңғарларға қарсы шешуші сөз сөйлеген қай батыр көрсетілген?", options: ["Қабанбай батыр", "Бөгенбай батыр", "Есет батыр", "Жәнібек батыр"], answer: 1 },
+                { q: "Шах Махмуд Шорастың «Тарих» атты еңбегінде Жәңгір хан мен шағатайлық моғол ханы Абдаллахтың арасында неше елшілік болғаны жазылған?", options: ["2-3 елшілік", "5-6 елшілік", "10 елшілік", "1 елшілік"], answer: 1 },
+                { q: "Ортағасырлық авторлардың деректері бойынша, Еділ мен Жайық аралығындағы Ноғай ордасының алғашқы дербес мемлекет ретінде толық қалыптасуы кімнің билігі тұсында жүрді?", options: ["Едіге би", "Нұр ад-Дин (1426-1440 жж.)", "Мұса би", "Уақас би"], answer: 1 },
+                { q: "А. Левшиннің және басқа зерттеушілердің еңбектерінде Тәуке хан қандай антикалық заңгер-реформатордың есімімен аталып, «Дала Ликургі» атанды?", options: ["Солон", "Ликург (Спарта заңгері)", "Драконт", "Юстиниан"], answer: 1 },
+                { q: "1510 жылдың басында Мұхаммед Шайбанидің әскерін Ұлытау шоқыларында тұтқиылдан талқандаған қазақ сұлтанының әскери тактикасы қалай сипатталған?", options: ["Ашық далада майдан ашу", "Әскер жинап үлгермей, Ұлытау шоқыларына шегініп, тойтарыс беру", "Қала қабырғасын қоршау", "Түнгі шабуыл жасау"], answer: 1 },
+                { q: "«Қырымның қырық батыры» батырлар жырының бір нұсқасы 1942 жылы кімнің жырлауымен хатқа түсті?", options: ["Бұқар жырау", "Мұрын жырау", "Ақтамберді жырау", "Жамбыл Жабаев"], answer: 1 },
+                { q: "1730 жылы көктемде Аңырақай шайқасы кезінде қалмақ ханы Қалданның жақыны Шарышты жекпе-жекте өлтірген, атасының атымен ұрандаған сұлтан кім?", options: ["Барақ сұлтан", "Әбілмансұр (Абылай сұлтан)", "Әбілмәмбет сұлтан", "Есім сұлтан"], answer: 1 },
+                { q: "1627 жылы Есім хан Жайық бойына қалмақтарға қарсы 20 мыңдық жасақ аттандырған кезде қазақ жасағының бас қолбасшысы кім болды?", options: ["Тұрсын хан", "Жиембет батыр", "Қарасай батыр", "Жалаңтөс батыр"], answer: 1 }
+            ]
+        };
+
+        const stageBadges = {
+            1: { title: "«Алтын Орда Зерттеушісі»", icon: "🪙", desc: "Империялар дәуірін сәтті еңсердіңіз!" },
+            2: { title: "«Қазақ Хандығының Негізін Қалаушы»", icon: "⚔️", desc: "Хандар мен реформалар сынынан өттіңіз!" },
+            3: { title: "«Азаттық Жорығының Батыры»", icon: "🛡️", desc: "Ұлы жеңістер мен шайқастарды меңгердіңіз!" },
+            4: { title: "«Архив пен Деректердің Бас Сарапшысы»", icon: "👑", desc: "Ең қиын тарихи дереккөздерді бағындырдыңыз!" }
+        };
+
+        let currentUser = null;
+        let currentStage = 1;
+        let currentQuestionIdx = 0;
+        let currentScore = 0;
+        let stageScore = 0;
+        let lives = 3;
+
+        function startStudentGame() {
+            let name = document.getElementById('playerName').value.trim();
+            if (!name) { alert("Атыңызды немесе топ атауын жазыңыз!"); return; }
+            currentUser = name;
+
+            let users = JSON.parse(localStorage.getItem('history_users') || "{}");
+            if (!users[name]) {
+                users[name] = { score: 0, stage: 1, lives: 3 };
+                localStorage.setItem('history_users', JSON.stringify(users));
+            } else {
+                lives = users[name].lives !== undefined ? users[name].lives : 3;
+                currentScore = users[name].score;
+            }
+
+            if (lives <= 0) {
+                lives = 3;
+                users[name].lives = 3;
+                localStorage.setItem('history_users', JSON.stringify(users));
+            }
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('statusBar').style.display = 'flex';
+            document.getElementById('studentHub').classList.remove('hidden');
+            document.getElementById('welcomeUser').innerText = `Қош келдіңіз, ${name}!`;
+            updateStatusBar();
+        }
+
+        function showAdminLogin() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminLoginScreen').classList.remove('hidden');
+        }
+
+        function verifyAdmin() {
+            let pass = document.getElementById('adminPass').value;
+            if (pass === "admin123") {
+                document.getElementById('adminLoginScreen').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadAdminTable();
+            } else {
+                alert("Құпия сөз қате! (admin123)");
+            }
+        }
+
+        function loadAdminTable() {
+            let users = JSON.parse(localStorage.getItem('history_users') || "{}");
+            let tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = "";
+            let idx = 1;
+            for (let u in users) {
+                tbody.innerHTML += `<tr>
+                    <td>${idx++}</td>
+                    <td><b>${u}</b></td>
+                    <td>${users[u].stage}-кезең</td>
+                    <td>❤️ ${users[u].lives !== undefined ? users[u].lives : 3}</td>
+                    <td><b>${users[u].score} ұпай</b></td>
+                    <td><button class="btn btn-danger" style="padding: 5px 10px; font-size:0.8rem;" onclick="deleteUser('${u}')">Өшіру</button></td>
+                </tr>`;
+            }
+        }
+
+        function deleteUser(name) {
+            let users = JSON.parse(localStorage.getItem('history_users') || "{}");
+            delete users[name];
+            localStorage.setItem('history_users', JSON.stringify(users));
+            loadAdminTable();
+        }
+
+        function resetAllData() {
+            if (confirm("Барлық оқушылар дерегін тазартуды растайсыз ба?")) {
+                localStorage.removeItem('history_users');
+                loadAdminTable();
+            }
+        }
+
+        function updateStatusBar() {
+            let hearts = "❤️ ".repeat(Math.max(0, lives)).trim();
+            document.getElementById('livesDisplay').innerText = hearts || "💔 Жоқ";
+            document.getElementById('scoreDisplay').innerText = `Ұпай: ${currentScore}`;
+
+            let users = JSON.parse(localStorage.getItem('history_users') || "{}");
+            if (users[currentUser]) {
+                users[currentUser].score = currentScore;
+                users[currentUser].lives = lives;
+                localStorage.setItem('history_users', JSON.stringify(users));
+            }
+        }
+
+        function startStage(stageNum) {
+            if (lives <= 0) {
+                showGameOver();
+                return;
+            }
+            currentStage = stageNum;
+            currentQuestionIdx = 0;
+            stageScore = 0;
+
+            document.body.className = `stage-${stageNum}`;
+
+            document.getElementById('studentHub').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            document.getElementById('quizStageTitle').innerText = `${stageNum}-Кезең Сұрақтары`;
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            let questions = stagesData[currentStage];
+            if (currentQuestionIdx >= questions.length) {
+                finishStage();
+                return;
+            }
+
+            let qData = questions[currentQuestionIdx];
+            document.getElementById('questionCounter').innerText = `Сұрақ: ${currentQuestionIdx + 1} / ${questions.length}`;
+            document.getElementById('questionText').innerText = qData.q;
+
+            let optList = document.getElementById('optionsList');
+            optList.innerHTML = "";
+
+            qData.options.forEach((opt, idx) => {
+                let btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx, qData.answer, btn);
+                optList.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selected, correct, btn) {
+            let buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === correct) {
+                btn.classList.add('correct');
+                stageScore += 10;
+                currentScore += 10;
+            } else {
+                btn.classList.add('wrong');
+                buttons[correct].classList.add('correct');
+                lives--;
+                updateStatusBar();
+                if (lives <= 0) {
+                    setTimeout(() => { showGameOver(); }, 1000);
+                    return;
+                }
+            }
+
+            updateStatusBar();
+            setTimeout(() => {
+                currentQuestionIdx++;
+                loadQuestion();
+            }, 1200);
+        }
+
+        function finishStage() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('rewardScreen').classList.remove('hidden');
+
+            let badge = stageBadges[currentStage];
+            document.getElementById('rewardBadge').innerText = badge.icon;
+            document.getElementById('rewardTitle').innerText = badge.title;
+            document.getElementById('rewardDesc').innerText = `${badge.desc} Бұл кезеңде ${stageScore} ұпай жинадыңыз!`;
+
+            currentScore += 30;
+            updateStatusBar();
+        }
+
+        function showGameOver() {
+            document.getElementById('quizScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        function restartStage() {
+            lives = 3;
+            updateStatusBar();
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            startStage(currentStage);
+        }
+
+        function returnToHub() {
+            document.getElementById('rewardScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('leaderboardScreen').classList.add('hidden');
+            document.getElementById('studentHub').classList.remove('hidden');
+            document.body.className = `stage-1`;
+            updateStatusBar();
+        }
+
+        function exitToHub() {
+            if (confirm("Мәзірге шықсаңыз, ағымдағы кезең басынан басталады. Шығуды растайсыз ба?")) {
+                returnToHub();
+            }
+        }
+
+        function showLeaderboard() {
+            document.getElementById('studentHub').classList.add('hidden');
+            document.getElementById('leaderboardScreen').classList.remove('hidden');
+
+            let users = JSON.parse(localStorage.getItem('history_users') || "{}");
+            let sorted = Object.entries(users).sort((a, b) => b[1].score - a[1].score);
+
+            let myRank = sorted.findIndex(item => item[0] === currentUser) + 1;
+            let totalPlayers = sorted.length;
+
+            let rankBox = document.getElementById('myRankBox');
+            if (myRank > 0) {
+                rankBox.innerHTML = `👤 Қатысушы: <b>${currentUser}</b><br>🎯 Сіздің орныңыз: <b style="color: #4CAF50; font-size: 1.6rem;">${myRank}-ші орын</b> (Барлығы: ${totalPlayers} қатысушы)`;
+            } else {
+                rankBox.innerHTML = `👤 Нәтижеңіз әлі тіркелмеді.`;
+            }
+
+            let tbody = document.getElementById('leaderboardTableBody');
+            tbody.innerHTML = "";
+            sorted.forEach((item, index) => {
+                tbody.innerHTML += `<tr>
+                    <td><b>#${index + 1}</b></td>
+                    <td>${item[0]}</td>
+                    <td><b>${item[1].score} ұпай</b></td>
+                </tr>`;
+            });
+        }
+    </script>
+</body>
+</html>
